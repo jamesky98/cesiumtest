@@ -27,35 +27,91 @@ RequestScheduler.requestsByServer["tile.googleapis.com:443"] = 18;
 onMounted(function () {
   // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
   const viewer = new Viewer('cesiumContainer', {
-    // terrain: Terrain.fromWorldTerrain(),
-    imageryProvider: false,
+    animation: false,
     baseLayerPicker: false,
-    requestRenderMode: true,
-  });    
+    // fullscreenButton: false,
+    // vrButton: false,
+    geocoder: false,
+    // homeButton: false,
+    // infoBox: false,
+    sceneModePicker: false,
+    // selectionIndicator: false,
+    timeline: false,
+    navigationHelpButton: false,
+    // navigationInstructionsInitiallyVisible: true,
+    // scene3DOnly: false,
+    // shouldAnimate: true,
+    // clockViewModel: 
+    // selectedImageryProviderViewModel
+    // imageryProviderViewModels
+    // selectedTerrainProviderViewModel
+    // terrainProviderViewModels
+    // baseLayer
+    // terrainProvider
+    terrain: Terrain.fromWorldTerrain(),
+    // skyBox
+    // skyAtmosphere
+    // fullscreenElement
+    // useDefaultRenderLoop
+    // targetFrameRate
+    // showRenderLoopErrors
+    // useBrowserRecommendedResolution
+    // automaticallyTrackDataSourceClocks
+    // contextOptions
+    // sceneMode
+    // mapProjection
+    // globe
+    // orderIndependentTranslucency
+    // creditContainer
+    // creditViewport
+    // dataSources
+    // shadows: false,
+    // terrainShadows
+    // mapMode2D
+    projectionPicker: false,
+    // blurActiveElementOnCanvasFocus: true,
+    // requestRenderMode: false,
+    // maximumRenderTimeChange
+    // depthPlaneEllipsoidOffset
+    // msaaSamples
+  });   
 
+  // Logo none
+  viewer.bottomContainer.style.display = "none";
   const camera = viewer.camera;
-
   // Fly the camera to San Francisco at the given longitude, latitude, and height.
-  camera.flyTo({
-    destination: Cartesian3.fromDegrees(-122.4175, 37.655, 400),
-    orientation: {
-      heading: CesiumMath.toRadians(0.0),
-      pitch: CesiumMath.toRadians(-15.0),
-    }
-  });
-
+  // camera.flyTo({
+  //   destination: Cartesian3.fromDegrees(-122.4175, 37.655, 400),
+  //   orientation: {
+  //     heading: CesiumMath.toRadians(0.0),
+  //     pitch: CesiumMath.toRadians(-15.0),
+  //   }
+  // });
+  
+  vinfo_txt.value = camera.positionWC.toString();
   camera.changed.addEventListener(()=>{
-    // console.log('changed')
-
-    vinfo_txt.value = camera.positionWC.x + ',' + camera.positionWC.y + ',' + camera.positionWC.z
+    vinfo_txt.value = camera.positionWC.toString() + '\n';
+    // vinfo_txt.value += camera.position.toString() + '\n';
+    vinfo_txt.value += 
+      '(' + CesiumMath.toDegrees(camera.positionCartographic.latitude) + ',' + 
+      CesiumMath.toDegrees(camera.positionCartographic.longitude) + ',' +
+      camera.positionCartographic.height + ')\n';
+    
+    vinfo_txt.value += 
+      '(' + CesiumMath.toDegrees(camera.roll) + ',' + 
+      CesiumMath.toDegrees(camera.pitch) + ',' +
+      CesiumMath.toDegrees(camera.heading) + ')\n';
+    
+    vinfo_txt.value += camera.directionWC.toString() + '\n';
+    vinfo_txt.value += camera.directionWC.toString();
   })
   // Add Cesium OSM Buildings, a global 3D buildings layer.
-  // createOsmBuildingsAsync().then((buildingTileset)=>{
-  //   viewer.scene.primitives.add(buildingTileset);   
-  // })
-  Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=AIzaSyD_BVTqEVIUJJ6rqbY571GsDemijM7RZFc").then(tileset=>{
-    viewer.scene.primitives.add(tileset); 
-  });
+  createOsmBuildingsAsync().then((buildingTileset)=>{
+    viewer.scene.primitives.add(buildingTileset);   
+  })
+  // Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=AIzaSyD_BVTqEVIUJJ6rqbY571GsDemijM7RZFc").then(tileset=>{
+  //   viewer.scene.primitives.add(tileset); 
+  // });
 });
 
 
@@ -63,7 +119,7 @@ onMounted(function () {
 
 <template>
   <div id="cesiumContainer"></div>
-  <div id="vinfo">{{vinfo_txt}}</div>
+  <div id="vinfo" class="pre-formatted">{{vinfo_txt}}</div>
 </template>
 
 <style>
@@ -89,4 +145,7 @@ html, body{
   height: var(--bottom-div);
 }
 
+.pre-formatted {
+  white-space: pre-line;
+}
 </style>
