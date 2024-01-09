@@ -3,8 +3,7 @@ import {
   ref, reactive, onMounted, 
   provide, inject, watch,
   isProxy, toRaw } from "vue";
-// The URL on your server where CesiumJS's static files are hosted.
-window.CESIUM_BASE_URL = '/Cesium';
+
 
 import { 
   Cartesian3, 
@@ -14,12 +13,30 @@ import {
   Terrain, Viewer,
   RequestScheduler } from 'cesium';
 import "cesium/Build/Cesium/Widgets/widgets.css";
+import {
+  MDBInput,  MDBTextarea,
+  MDBCol,  MDBRow,  MDBContainer,
+  MDBSelect,  MDBDatepicker,  MDBBtn,  MDBPopconfirm,
+  MDBSpinner,  MDBAnimation,  MDBAlert,
+  MDBModal,  MDBModalHeader,  MDBModalTitle,  MDBModalBody,  MDBModalFooter,
+  MDBSwitch,
+} from 'mdb-vue-ui-kit';
 
-const vinfo_txt = ref('');
-// Your access token can be found at: https://ion.cesium.com/tokens.
-// Replace `your_access_token` with your Cesium ion access token.
+//#region ======參數======
+  // The URL on your server where CesiumJS's static files are hosted.
+  window.CESIUM_BASE_URL = '/Cesium';
+  const positionWC_str = ref('');
+  const positionWC_step = ref(1000);
 
-Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyOTZjNzE5ZS00ZjczLTQ4NGMtOTY1Zi1kZDlhMTU5ZTUzYzkiLCJpZCI6MTQ3NzE0LCJpYXQiOjE3MDMxMzI1OTd9.6BsWfZC1H_THaVpj-CF0DlqqvFCtrojtpsPeMxFnVgU';
+  const positionCartographic_str = ref('');
+  const Oritation_str = ref('');
+  const directionWC_str = ref('');
+
+  // Your access token can be found at: https://ion.cesium.com/tokens.
+  // Replace `your_access_token` with your Cesium ion access token.
+  Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyOTZjNzE5ZS00ZjczLTQ4NGMtOTY1Zi1kZDlhMTU5ZTUzYzkiLCJpZCI6MTQ3NzE0LCJpYXQiOjE3MDMxMzI1OTd9.6BsWfZC1H_THaVpj-CF0DlqqvFCtrojtpsPeMxFnVgU';
+
+//#endregion ======參數======
 
 // google Maptile 加速使用
 RequestScheduler.requestsByServer["tile.googleapis.com:443"] = 18;
@@ -80,46 +97,87 @@ onMounted(function () {
   viewer.bottomContainer.style.display = "none";
   const camera = viewer.camera;
   // Fly the camera to San Francisco at the given longitude, latitude, and height.
-  // camera.flyTo({
-  //   destination: Cartesian3.fromDegrees(-122.4175, 37.655, 400),
-  //   orientation: {
-  //     heading: CesiumMath.toRadians(0.0),
-  //     pitch: CesiumMath.toRadians(-15.0),
-  //   }
-  // });
+  camera.flyTo({
+    destination: Cartesian3.fromDegrees(120.6638, 24.147, 2000),
+    orientation: {
+      heading: CesiumMath.toRadians(0.0),
+      pitch: CesiumMath.toRadians(-85.0),
+    }
+  });
   
-  vinfo_txt.value = camera.positionWC.toString();
+  showInfo(camera);
   camera.changed.addEventListener(()=>{
-    vinfo_txt.value = camera.positionWC.toString() + '\n';
-    // vinfo_txt.value += camera.position.toString() + '\n';
-    vinfo_txt.value += 
-      '(' + CesiumMath.toDegrees(camera.positionCartographic.latitude) + ',' + 
-      CesiumMath.toDegrees(camera.positionCartographic.longitude) + ',' +
-      camera.positionCartographic.height + ')\n';
-    
-    vinfo_txt.value += 
-      '(' + CesiumMath.toDegrees(camera.roll) + ',' + 
-      CesiumMath.toDegrees(camera.pitch) + ',' +
-      CesiumMath.toDegrees(camera.heading) + ')\n';
-    
-    vinfo_txt.value += camera.directionWC.toString() + '\n';
-    vinfo_txt.value += camera.directionWC.toString();
+    showInfo(camera);
   })
   // Add Cesium OSM Buildings, a global 3D buildings layer.
-  createOsmBuildingsAsync().then((buildingTileset)=>{
-    viewer.scene.primitives.add(buildingTileset);   
-  })
+  // createOsmBuildingsAsync().then((buildingTileset)=>{
+  //   viewer.scene.primitives.add(buildingTileset);   
+  // })
   // Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=AIzaSyD_BVTqEVIUJJ6rqbY571GsDemijM7RZFc").then(tileset=>{
   //   viewer.scene.primitives.add(tileset); 
   // });
 });
 
+function showInfo(camera){
+  // positionWC
+  positionWC_str.value = camera.positionWC.toString()
+  // positionCartographic
+  positionCartographic_str.value = 
+    '(' + CesiumMath.toDegrees(camera.positionCartographic.latitude) + ',' + 
+    CesiumMath.toDegrees(camera.positionCartographic.longitude) + ',' +
+    camera.positionCartographic.height + ')';
+
+  // Oritation
+  Oritation_str.value =
+    '(' + CesiumMath.toDegrees(camera.roll) + ',' + 
+    CesiumMath.toDegrees(camera.pitch) + ',' +
+    CesiumMath.toDegrees(camera.heading) + ')';
+
+  // directionWC
+  directionWC_str.value = camera.directionWC.toString();
+}
 
 </script>
 
 <template>
   <div id="cesiumContainer"></div>
-  <div id="vinfo" class="pre-formatted">{{vinfo_txt}}</div>
+  <MDBContainer id="vinfo">
+    <!-- positionWC -->
+    <MDBRow>
+      <MDBCol col="2">positionWC</MDBCol>
+      <MDBCol col="7">{{ positionWC_str }}</MDBCol>
+      <MDBCol col="3" class="p-1">
+        <MDBRow>
+          <!-- step -->
+          <MDBCol col="6" class="d-flex align-items-center">
+            <MDBInput size="sm" v-model="positionWC_step"></MDBInput>
+          </MDBCol>
+          <MDBCol v-for="n in 3" class="d-flex flex-column align-items-start p-0">
+            <MDBBtn color="primary" class="btn-updowm" @click="setValueBtn(n,1)">+</MDBBtn>
+            <MDBBtn color="primary" class="btn-updowm mt-1" @click="setValueBtn(n,-1)">-</MDBBtn>
+          </MDBCol>
+        </MDBRow>
+      </MDBCol>
+    </MDBRow>
+    <!-- positionCartographic -->
+    <MDBRow>
+      <MDBCol col="2">positionCartographic</MDBCol>
+      <MDBCol col="7">{{ positionCartographic_str }}</MDBCol>
+      <MDBCol col="3">tools</MDBCol>
+    </MDBRow>
+    <!-- Oritation -->
+    <MDBRow>
+      <MDBCol col="2">Oritation</MDBCol>
+      <MDBCol col="7">{{ Oritation_str }}</MDBCol>
+      <MDBCol col="3">tools</MDBCol>
+    </MDBRow>
+    <!-- directionWC -->
+    <MDBRow>
+      <MDBCol col="2">directionWC</MDBCol>
+      <MDBCol col="7">{{ directionWC_str }}</MDBCol>
+      <MDBCol col="3">tools</MDBCol>
+    </MDBRow>
+  </MDBContainer>
 </template>
 
 <style>
@@ -132,6 +190,7 @@ html, body{
   height: 100%;
 }
 #app{
+  font-family: Roboto, Helvetica, Arial, sans-serif;
   position: relative;
   height: 100%;
 }
@@ -147,5 +206,11 @@ html, body{
 
 .pre-formatted {
   white-space: pre-line;
+}
+
+.btn-updowm{
+  padding: 0!important;
+  width: 1.5rem;
+  height: 1rem;
 }
 </style>

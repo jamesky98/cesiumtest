@@ -10,10 +10,11 @@
   },
   "dependencies": {
     "cesium": "^1.112.0",
+    "mdb-vue-ui-kit": "git+https://oauth2:xfmb3NQ7xmmjona5VzHA@git.mdbootstrap.com/mdb/vue/mdb5/prd/mdb5-vue-ui-kit-pro-essential",
     "vue": "^3.3.11"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.5.2",
+    "@vitejs/plugin-vue": "^5.0.2",
     "vite": "^5.0.8"
   }
 }
