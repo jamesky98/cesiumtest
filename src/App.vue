@@ -25,12 +25,20 @@ import {
 //#region ======參數======
   // The URL on your server where CesiumJS's static files are hosted.
   window.CESIUM_BASE_URL = '/Cesium';
-  const positionWC_str = ref('');
+  const positionWC_str = ref([]);
   const positionWC_step = ref(1000);
 
-  const positionCartographic_str = ref('');
-  const Oritation_str = ref('');
-  const directionWC_str = ref('');
+  const positionCartographic_str = ref([]);
+  const Oritation_str = ref([]);
+  const directionWC_str = ref([]);
+  const upWC_str = ref([]);
+
+  const moveAmount = ref(10000);
+  const forwardAmount = ref(1000000);
+  const angleAmount = ref(10);
+
+  let cs_viewer;
+  let cs_camera;
 
   // Your access token can be found at: https://ion.cesium.com/tokens.
   // Replace `your_access_token` with your Cesium ion access token.
@@ -43,7 +51,7 @@ RequestScheduler.requestsByServer["tile.googleapis.com:443"] = 18;
 
 onMounted(function () {
   // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
-  const viewer = new Viewer('cesiumContainer', {
+  cs_viewer = new Viewer('cesiumContainer', {
     animation: false,
     baseLayerPicker: false,
     // fullscreenButton: false,
@@ -92,22 +100,28 @@ onMounted(function () {
     // depthPlaneEllipsoidOffset
     // msaaSamples
   });   
-
+  
   // Logo none
-  viewer.bottomContainer.style.display = "none";
-  const camera = viewer.camera;
+  cs_viewer.bottomContainer.style.display = "none";
+  cs_camera = cs_viewer.camera;
+
+  // cs_camera.upWC.x
   // Fly the camera to San Francisco at the given longitude, latitude, and height.
-  camera.flyTo({
-    destination: Cartesian3.fromDegrees(120.6638, 24.147, 2000),
-    orientation: {
-      heading: CesiumMath.toRadians(0.0),
-      pitch: CesiumMath.toRadians(-85.0),
-    }
+  cs_camera.flyTo({
+    // destination: Cartesian3.fromDegrees(120.6638, 24.147, 2000),
+    destination: new Cartesian3(20000000, 0, 0),
+    // orientation: {
+    //   heading: CesiumMath.toRadians(0.0),
+    //   pitch: CesiumMath.toRadians(-85.0),
+    // }
   });
   
-  showInfo(camera);
-  camera.changed.addEventListener(()=>{
-    showInfo(camera);
+  showInfo(cs_camera);
+  cs_camera.changed.addEventListener(()=>{
+    showInfo(cs_camera);
+  })
+  cs_camera.moveEnd.addEventListener(()=>{
+    showInfo(cs_camera);
   })
   // Add Cesium OSM Buildings, a global 3D buildings layer.
   // createOsmBuildingsAsync().then((buildingTileset)=>{
@@ -120,21 +134,78 @@ onMounted(function () {
 
 function showInfo(camera){
   // positionWC
-  positionWC_str.value = camera.positionWC.toString()
+  // positionWC_str.value = camera.positionWC.toString();
+  positionWC_str.value = [
+    camera.positionWC.x.toFixed(3),
+    camera.positionWC.y.toFixed(3),
+    camera.positionWC.z.toFixed(3)
+  ]
   // positionCartographic
-  positionCartographic_str.value = 
-    '(' + CesiumMath.toDegrees(camera.positionCartographic.latitude) + ',' + 
-    CesiumMath.toDegrees(camera.positionCartographic.longitude) + ',' +
-    camera.positionCartographic.height + ')';
-
+  positionCartographic_str.value = [
+    CesiumMath.toDegrees(camera.positionCartographic.longitude).toFixed(8),
+    CesiumMath.toDegrees(camera.positionCartographic.latitude).toFixed(8),
+    camera.positionCartographic.height.toFixed(3)
+  ]
   // Oritation
-  Oritation_str.value =
-    '(' + CesiumMath.toDegrees(camera.roll) + ',' + 
-    CesiumMath.toDegrees(camera.pitch) + ',' +
-    CesiumMath.toDegrees(camera.heading) + ')';
+  Oritation_str.value = [
+    CesiumMath.toDegrees(camera.roll).toFixed(8),
+    CesiumMath.toDegrees(camera.pitch).toFixed(8),
+    CesiumMath.toDegrees(camera.heading).toFixed(8),
+  ];
 
   // directionWC
-  directionWC_str.value = camera.directionWC.toString();
+  directionWC_str.value = [
+    camera.directionWC.x.toFixed(3),
+    camera.directionWC.y.toFixed(3),
+    camera.directionWC.z.toFixed(3)
+  ];
+
+  // upWC
+  upWC_str.value = [
+    camera.upWC.x.toFixed(3),
+    camera.upWC.y.toFixed(3),
+    camera.upWC.z.toFixed(3)
+  ];
+}
+
+function moveCamera(camera,action){
+  if(action==='moveUp'){
+    camera.moveUp(parseFloat(moveAmount.value));
+  }else if(action==='moveDown'){
+    camera.moveDown(parseFloat(moveAmount.value));
+  }else if(action==='moveLeft'){
+    camera.moveLeft(parseFloat(moveAmount.value));
+  }else if(action==='moveRight'){
+    camera.moveRight(parseFloat(moveAmount.value));
+  }else if(action==='moveForward'){
+    camera.moveForward(parseFloat(forwardAmount.value));
+  }else if(action==='moveBackward'){
+    camera.moveBackward(parseFloat(forwardAmount.value));
+  }else if(action==='lookUp'){
+    camera.lookUp(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='lookDown'){
+    camera.lookDown(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='lookLeft'){
+    camera.lookLeft(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='lookRight'){
+    camera.lookRight(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='zoomIn'){
+    camera.zoomIn(parseFloat(forwardAmount.value));
+  }else if(action==='zoomOut'){
+    camera.zoomOut(parseFloat(forwardAmount.value));
+  }else if(action==='twistLeft'){
+    camera.twistLeft(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='twistRight'){
+    camera.twistRight(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='rotateUp'){
+    camera.rotateUp(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='rotateDown'){
+    camera.rotateDown(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='rotateLeft'){
+    camera.rotateLeft(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='rotateRight'){
+    camera.rotateRight(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }
 }
 
 </script>
@@ -144,45 +215,96 @@ function showInfo(camera){
   <MDBContainer id="vinfo">
     <!-- positionWC -->
     <MDBRow>
-      <MDBCol col="2">positionWC</MDBCol>
-      <MDBCol col="7">{{ positionWC_str }}</MDBCol>
-      <MDBCol col="3" class="p-1">
+      <!-- block 1 -->
+      <MDBCol>
+        <MDBRow class="text-start">
+          <MDBCol col="2" class="overflow-hidden">positionWC</MDBCol>
+          <MDBCol>{{ positionWC_str[0] }}</MDBCol>
+          <MDBCol>{{ positionWC_str[1] }}</MDBCol>
+          <MDBCol>{{ positionWC_str[2] }}</MDBCol>
+          <div></div>
+          <MDBCol col="2" class="overflow-hidden">positionCartographic</MDBCol>
+          <MDBCol>{{ positionCartographic_str[0] }}</MDBCol>
+          <MDBCol>{{ positionCartographic_str[1] }}</MDBCol>
+          <MDBCol>{{ positionCartographic_str[2] }}</MDBCol>
+          <div></div>
+          <MDBCol col="2" class="overflow-hidden">Oritation</MDBCol>
+          <MDBCol>{{ Oritation_str[0] }}</MDBCol>
+          <MDBCol>{{ Oritation_str[1] }}</MDBCol>
+          <MDBCol>{{ Oritation_str[2] }}</MDBCol>
+          <div></div>
+          <MDBCol col="2" class="overflow-hidden">directionWC</MDBCol>
+          <MDBCol>{{ directionWC_str[0] }}</MDBCol>
+          <MDBCol>{{ directionWC_str[1] }}</MDBCol>
+          <MDBCol>{{ directionWC_str[2] }}</MDBCol>
+          <div></div>
+          <MDBCol col="2" class="overflow-hidden">upWC</MDBCol>
+          <MDBCol>{{ upWC_str[0] }}</MDBCol>
+          <MDBCol>{{ upWC_str[1] }}</MDBCol>
+          <MDBCol>{{ upWC_str[2] }}</MDBCol>
+        </MDBRow>
+      </MDBCol>
+      <!-- block 2 -->
+      <MDBCol col="2">
         <MDBRow>
-          <!-- step -->
-          <MDBCol col="6" class="d-flex align-items-center">
-            <MDBInput size="sm" v-model="positionWC_step"></MDBInput>
+          <MDBCol col="12">
+            <MDBInput v-model="moveAmount"></MDBInput>
           </MDBCol>
-          <MDBCol v-for="n in 3" class="d-flex flex-column align-items-start p-0">
-            <MDBBtn color="primary" class="btn-updowm" @click="setValueBtn(n,1)">+</MDBBtn>
-            <MDBBtn color="primary" class="btn-updowm mt-1" @click="setValueBtn(n,-1)">-</MDBBtn>
+          <MDBCol v-for="x in ['moveUp','moveDown','moveLeft','moveRight']" col="6">
+            <MDBRow>
+              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            </MDBRow>
+          </MDBCol>
+          <MDBCol col="12">
+            <MDBInput v-model="forwardAmount"></MDBInput>
+          </MDBCol>
+          <MDBCol v-for="x in ['moveForward','moveBackward']" col="6">
+            <MDBRow>
+              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            </MDBRow>
           </MDBCol>
         </MDBRow>
       </MDBCol>
-    </MDBRow>
-    <!-- positionCartographic -->
-    <MDBRow>
-      <MDBCol col="2">positionCartographic</MDBCol>
-      <MDBCol col="7">{{ positionCartographic_str }}</MDBCol>
-      <MDBCol col="3">tools</MDBCol>
-    </MDBRow>
-    <!-- Oritation -->
-    <MDBRow>
-      <MDBCol col="2">Oritation</MDBCol>
-      <MDBCol col="7">{{ Oritation_str }}</MDBCol>
-      <MDBCol col="3">tools</MDBCol>
-    </MDBRow>
-    <!-- directionWC -->
-    <MDBRow>
-      <MDBCol col="2">directionWC</MDBCol>
-      <MDBCol col="7">{{ directionWC_str }}</MDBCol>
-      <MDBCol col="3">tools</MDBCol>
+      <!-- block 3 -->
+      <MDBCol col="1">
+        <MDBRow>
+          <MDBCol col="12">
+            <MDBInput v-model="angleAmount"></MDBInput>
+          </MDBCol>
+          <MDBCol v-for="x in ['lookUp','lookDown','lookLeft','lookRight']" col="12">
+            <MDBRow>
+              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            </MDBRow>
+          </MDBCol>
+        </MDBRow>
+      </MDBCol>
+      <!-- block 4 -->
+      <MDBCol col="1">
+        <MDBRow>
+          <MDBCol v-for="x in ['zoomIn','zoomOut','twistLeft','twistRight']" col="12">
+            <MDBRow>
+              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            </MDBRow>
+          </MDBCol>
+        </MDBRow>
+      </MDBCol>
+      <!-- block 5 -->
+      <MDBCol col="1">
+        <MDBRow>
+          <MDBCol v-for="x in ['rotateUp','rotateDown','rotateLeft','rotateRight']" col="12">
+            <MDBRow>
+              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            </MDBRow>
+          </MDBCol>
+        </MDBRow>
+      </MDBCol>
     </MDBRow>
   </MDBContainer>
 </template>
 
 <style>
 :root {
-  --bottom-div: 10rem;
+  --bottom-div: 12rem;
 }
 
 html, body{
@@ -208,9 +330,5 @@ html, body{
   white-space: pre-line;
 }
 
-.btn-updowm{
-  padding: 0!important;
-  width: 1.5rem;
-  height: 1rem;
-}
+
 </style>
