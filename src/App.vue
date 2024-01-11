@@ -11,7 +11,8 @@ import {
   Cesium3DTileset, 
   Ion, Math as CesiumMath, 
   Terrain, Viewer,
-  RequestScheduler } from 'cesium';
+  RequestScheduler,
+  viewerCesium3DTilesInspectorMixin } from 'cesium';
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import {
   MDBInput,  MDBTextarea,
@@ -90,7 +91,7 @@ onMounted(function () {
     // creditContainer
     // creditViewport
     // dataSources
-    // shadows: false,
+    shadows: false,
     // terrainShadows
     // mapMode2D
     projectionPicker: false,
@@ -105,23 +106,20 @@ onMounted(function () {
   cs_viewer.bottomContainer.style.display = "none";
   cs_camera = cs_viewer.camera;
 
-  // cs_camera.DEFAULT_VIEW_RECTANGLE = Rectangle.fromDegrees(
-  //   -95.0,
-  //   -20.0,
-  //   -70.0,
-  //   90.0
-  // );
+  // cs_viewer.extend(viewerCesium3DTilesInspectorMixin);
+  // const inspectorViewModel = cs_viewer.cesium3DTilesInspector.viewModel;
 
+  cs_viewer.scene.debugShowFramesPerSecond = true;
   // cs_camera.upWC.x
   // Fly the camera to San Francisco at the given longitude, latitude, and height.
-  cs_camera.flyTo({
-    // destination: Cartesian3.fromDegrees(120.6638, 24.147, 2000),
-    destination: new Cartesian3(20000000, 0, 0),
-    // orientation: {
-    //   heading: CesiumMath.toRadians(0.0),
-    //   pitch: CesiumMath.toRadians(-85.0),
-    // }
-  });
+  // cs_camera.flyTo({
+  //   // destination: Cartesian3.fromDegrees(120.6638, 24.147, 2000),
+  //   destination: Cartesian3.fromDegrees(121,24,100000),
+  //   // orientation: {
+  //   //   heading: CesiumMath.toRadians(0.0),
+  //   //   pitch: CesiumMath.toRadians(-85.0),
+  //   // }
+  // });
   
   showInfo(cs_camera);
   cs_camera.changed.addEventListener(()=>{
@@ -132,11 +130,20 @@ onMounted(function () {
   })
   // Add Cesium OSM Buildings, a global 3D buildings layer.
   // createOsmBuildingsAsync().then((buildingTileset)=>{
-  //   viewer.scene.primitives.add(buildingTileset);   
+  //   cs_viewer.scene.primitives.add(buildingTileset);   
   // })
   // Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=AIzaSyD_BVTqEVIUJJ6rqbY571GsDemijM7RZFc").then(tileset=>{
   //   viewer.scene.primitives.add(tileset); 
   // });
+  // 自動遮蔽低於地形高度的模型
+  cs_viewer.scene.globe.depthTestAgainstTerrain = true;
+  Cesium3DTileset.fromUrl("/samples/lod/tileset.json").then(tileset=>{
+    cs_viewer.scene.primitives.add(tileset);
+    cs_viewer.zoomTo(tileset);
+    // cs_camera.flyTo({
+    //   destination: Cartesian3.fromDegrees(121,24,100000),
+    // })
+  });
 });
 
 function showInfo(camera){
