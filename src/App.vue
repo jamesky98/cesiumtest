@@ -105,6 +105,13 @@ onMounted(function () {
   cs_viewer.bottomContainer.style.display = "none";
   cs_camera = cs_viewer.camera;
 
+  // cs_camera.DEFAULT_VIEW_RECTANGLE = Rectangle.fromDegrees(
+  //   -95.0,
+  //   -20.0,
+  //   -70.0,
+  //   90.0
+  // );
+
   // cs_camera.upWC.x
   // Fly the camera to San Francisco at the given longitude, latitude, and height.
   cs_camera.flyTo({
@@ -205,16 +212,23 @@ function moveCamera(camera,action){
     camera.rotateLeft(CesiumMath.toRadians(parseFloat(angleAmount.value)));
   }else if(action==='rotateRight'){
     camera.rotateRight(CesiumMath.toRadians(parseFloat(angleAmount.value)));
+  }else if(action==='flyhome'){
+    camera.flyTo({
+      destination: Cartesian3.fromDegrees(121,24,100000)
+    })
   }
 }
 
 </script>
 
 <template>
-  <div id="cesiumContainer"></div>
-  <MDBContainer id="vinfo">
+  <MDBContainer fluid class="h-100">
+    <div id="cesiumContainer" class="border">
+      <div class="cursorH border-bottom border-danger"></div>
+      <div class="cursorV border-end border-danger"></div>
+    </div>
     <!-- positionWC -->
-    <MDBRow>
+    <MDBRow id="vinfo">
       <!-- block 1 -->
       <MDBCol>
         <MDBRow class="text-start">
@@ -251,16 +265,16 @@ function moveCamera(camera,action){
             <MDBInput v-model="moveAmount"></MDBInput>
           </MDBCol>
           <MDBCol v-for="x in ['moveUp','moveDown','moveLeft','moveRight']" col="6">
-            <MDBRow>
-              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            <MDBRow class="p-1">
+              <MDBBtn color="primary" class="text-truncate" @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
             </MDBRow>
           </MDBCol>
           <MDBCol col="12">
             <MDBInput v-model="forwardAmount"></MDBInput>
           </MDBCol>
           <MDBCol v-for="x in ['moveForward','moveBackward']" col="6">
-            <MDBRow>
-              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            <MDBRow class="p-1">
+              <MDBBtn color="primary" class="text-truncate" @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
             </MDBRow>
           </MDBCol>
         </MDBRow>
@@ -272,8 +286,8 @@ function moveCamera(camera,action){
             <MDBInput v-model="angleAmount"></MDBInput>
           </MDBCol>
           <MDBCol v-for="x in ['lookUp','lookDown','lookLeft','lookRight']" col="12">
-            <MDBRow>
-              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            <MDBRow class="p-1">
+              <MDBBtn color="primary" class="text-truncate" @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
             </MDBRow>
           </MDBCol>
         </MDBRow>
@@ -282,8 +296,8 @@ function moveCamera(camera,action){
       <MDBCol col="1">
         <MDBRow>
           <MDBCol v-for="x in ['zoomIn','zoomOut','twistLeft','twistRight']" col="12">
-            <MDBRow>
-              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            <MDBRow class="p-1">
+              <MDBBtn color="primary" class="text-truncate" @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
             </MDBRow>
           </MDBCol>
         </MDBRow>
@@ -292,8 +306,13 @@ function moveCamera(camera,action){
       <MDBCol col="1">
         <MDBRow>
           <MDBCol v-for="x in ['rotateUp','rotateDown','rotateLeft','rotateRight']" col="12">
-            <MDBRow>
-              <MDBBtn @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            <MDBRow class="p-1">
+              <MDBBtn color="primary" class="text-truncate" @click="moveCamera(cs_camera,x)">{{ x }}</MDBBtn>
+            </MDBRow>
+          </MDBCol>
+          <MDBCol col="12">
+            <MDBRow class="p-1">
+              <MDBBtn color="primary" class="text-truncate" @click="moveCamera(cs_camera,'flyhome')">home</MDBBtn>
             </MDBRow>
           </MDBCol>
         </MDBRow>
@@ -313,8 +332,10 @@ html, body{
 }
 #app{
   font-family: Roboto, Helvetica, Arial, sans-serif;
-  position: relative;
   height: 100%;
+  width: 100%;
+  margin: 0;
+  max-width: 100%;
 }
 
 #cesiumContainer{
@@ -324,11 +345,25 @@ html, body{
 #vinfo{
   position: relative;
   height: var(--bottom-div);
+  width: 100%;
 }
 
-.pre-formatted {
-  white-space: pre-line;
+.cursorH{
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 0;
+  z-index: 100;
 }
 
+.cursorV{
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 0;
+  height: 100%;
+  z-index: 100;
+}
 
 </style>
