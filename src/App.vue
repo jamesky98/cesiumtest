@@ -7,6 +7,7 @@ import {
 
 import { 
   Cartesian3, 
+  Cesium3DTileStyle,
   createOsmBuildingsAsync, 
   Cesium3DTileset, 
   Ion, Math as CesiumMath, 
@@ -62,7 +63,7 @@ onMounted(function () {
     // infoBox: false,
     sceneModePicker: false,
     // selectionIndicator: false,
-    timeline: false,
+    timeline: true,
     navigationHelpButton: false,
     // navigationInstructionsInitiallyVisible: true,
     // scene3DOnly: false,
@@ -74,7 +75,7 @@ onMounted(function () {
     // terrainProviderViewModels
     // baseLayer
     // terrainProvider
-    terrain: Terrain.fromWorldTerrain(),
+    // terrain: Terrain.fromWorldTerrain(),
     // skyBox
     // skyAtmosphere
     // fullscreenElement
@@ -137,7 +138,22 @@ onMounted(function () {
   // });
   // 自動遮蔽低於地形高度的模型
   cs_viewer.scene.globe.depthTestAgainstTerrain = true;
-  Cesium3DTileset.fromUrl("/samples/lod/tileset.json").then(tileset=>{
+  Cesium3DTileset.fromUrl("/samples/utrecht3d/tileset.json").then(tileset=>{
+
+    // tileset.style = new Cesium3DTileStyle({
+    //   color: {
+    //     conditions: [
+    //       ["${CLASSIFICATION} === 2", "color('brown')"],       // ground
+    //       ["${CLASSIFICATION} === 3", "color('greenyellow')"], // low vegetation
+    //       ["${CLASSIFICATION} === 4", "color('green')"],       // medium vegetation
+    //       ["${CLASSIFICATION} === 5", "color('darkgreen')"],   // high vegetation
+    //       ["${CLASSIFICATION} === 6", "color('red')"],   // high vegetation
+    //     ]
+    //   },
+    //   pointSize: 4
+    // });
+
+
     cs_viewer.scene.primitives.add(tileset);
     cs_viewer.zoomTo(tileset);
     // cs_camera.flyTo({
