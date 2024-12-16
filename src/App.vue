@@ -38,6 +38,32 @@ import {
   const forwardAmount = ref(1000000);
   const angleAmount = ref(10);
 
+  const layerTestList = {
+    utrecht: '/samples/outline/utrecht/tileset.json',
+    delaware: '/samples/outline/delaware/tileset.json',
+    box: '/samples/outline/box/tileset.json',
+    street: '/samples/street/tileset.json',
+    buildings: '/samples/buildings/tileset.json',
+    lod: '/samples/lod/tileset.json',
+    stadium: '/samples/stadium/tileset.json',
+    ship: '/samples/ship/tileset.json',
+    tyler: '/samples/tyler/30dz2_01/tileset.json',
+  }
+
+  const layerTestListOption = ref([
+    {text: "-未選取-", value: -1},
+    {text: "utrecht", value: "utrecht"},
+    {text: "delaware", value: "delaware"},
+    {text: "box", value: "box"},
+    {text: "street", value: "street"},
+    {text: "buildings", value: "buildings"},
+    {text: "lod", value: "lod"},
+    {text: "stadium", value: "stadium"},
+    {text: "ship", value: "ship"},
+    {text: "tyler", value: "tyler"},
+  ]);
+  const layerTestListSel = ref("");
+
   let cs_viewer;
   let cs_camera;
 
@@ -54,7 +80,7 @@ onMounted(function () {
   // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
   cs_viewer = new Viewer('cesiumContainer', {
     animation: false,
-    baseLayerPicker: false,
+    baseLayerPicker: true,
     // fullscreenButton: false,
     // vrButton: false,
     geocoder: false,
@@ -74,7 +100,7 @@ onMounted(function () {
     // terrainProviderViewModels
     // baseLayer
     // terrainProvider
-    terrain: Terrain.fromWorldTerrain(),
+    // terrain: Terrain.fromWorldTerrain(),
     // skyBox
     // skyAtmosphere
     // fullscreenElement
@@ -137,14 +163,26 @@ onMounted(function () {
   // });
   // 自動遮蔽低於地形高度的模型
   cs_viewer.scene.globe.depthTestAgainstTerrain = true;
-  Cesium3DTileset.fromUrl("/samples/lod/tileset.json").then(tileset=>{
-    cs_viewer.scene.primitives.add(tileset);
-    cs_viewer.zoomTo(tileset);
-    // cs_camera.flyTo({
-    //   destination: Cartesian3.fromDegrees(121,24,100000),
-    // })
-  });
+  // Cesium3DTileset.fromUrl("/samples/outline/utrecht/tileset.json").then(tileset=>{
+  //   cs_viewer.scene.primitives.add(tileset);
+  //   cs_viewer.zoomTo(tileset);
+  //   // cs_camera.flyTo({
+  //   //   destination: Cartesian3.fromDegrees(121,24,100000),
+  //   // })
+  // });
 });
+
+function changeLayer(e){
+  //console.log(layerTestListSel.value)
+  //cs_viewer.dataSources.add(
+    Cesium3DTileset.fromUrl(layerTestList[layerTestListSel.value]).then(tileset=>{
+      cs_viewer.scene.primitives.removeAll();
+      cs_viewer.scene.primitives.add(tileset);
+      cs_viewer.zoomTo(tileset);
+    })
+    //console.log(cs_viewer.scene.primitives)
+  //)
+}
 
 function showInfo(camera){
   // positionWC
@@ -235,6 +273,19 @@ function moveCamera(camera,action){
       <div class="cursorV border-end border-danger"></div>
     </div>
     <!-- positionWC -->
+    
+    <MDBRow>
+      <MDBCol md="4">
+        <MDBSelect 
+          size="sm" class="mt-3" 
+          label="選擇案例" 
+          v-model:options="layerTestListOption"
+          v-model:selected="layerTestListSel" 
+          @change="changeLayer()"
+          />
+      </MDBCol>
+    </MDBRow>
+    
     <MDBRow id="vinfo">
       <!-- block 1 -->
       <MDBCol>
