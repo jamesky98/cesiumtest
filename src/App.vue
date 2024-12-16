@@ -7,6 +7,7 @@ import {
 
 import { 
   Cartesian3, 
+  Cesium3DTileStyle,
   createOsmBuildingsAsync, 
   Cesium3DTileset, 
   Ion, Math as CesiumMath, 
@@ -26,6 +27,9 @@ import {
 //#region ======參數======
   // The URL on your server where CesiumJS's static files are hosted.
   window.CESIUM_BASE_URL = '/Cesium';
+  const google_token = ref(import.meta.env.VITE_GOOGLE_Token);
+  const cesium_token = ref(import.meta.env.VITE_CESIUM_Token);
+
   const positionWC_str = ref([]);
   const positionWC_step = ref(1000);
 
@@ -69,7 +73,7 @@ import {
 
   // Your access token can be found at: https://ion.cesium.com/tokens.
   // Replace `your_access_token` with your Cesium ion access token.
-  Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyOTZjNzE5ZS00ZjczLTQ4NGMtOTY1Zi1kZDlhMTU5ZTUzYzkiLCJpZCI6MTQ3NzE0LCJpYXQiOjE3MDMxMzI1OTd9.6BsWfZC1H_THaVpj-CF0DlqqvFCtrojtpsPeMxFnVgU';
+  Ion.defaultAccessToken = cesium_token.value;
 
 //#endregion ======參數======
 
@@ -88,7 +92,7 @@ onMounted(function () {
     // infoBox: false,
     sceneModePicker: false,
     // selectionIndicator: false,
-    timeline: false,
+    timeline: true,
     navigationHelpButton: false,
     // navigationInstructionsInitiallyVisible: true,
     // scene3DOnly: false,
@@ -100,6 +104,7 @@ onMounted(function () {
     // terrainProviderViewModels
     // baseLayer
     // terrainProvider
+    // terrain: Terrain.fromWorldTerrain(),
     // terrain: Terrain.fromWorldTerrain(),
     // skyBox
     // skyAtmosphere
@@ -158,18 +163,18 @@ onMounted(function () {
   // createOsmBuildingsAsync().then((buildingTileset)=>{
   //   cs_viewer.scene.primitives.add(buildingTileset);   
   // })
-  // Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=AIzaSyD_BVTqEVIUJJ6rqbY571GsDemijM7RZFc").then(tileset=>{
+  // Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=" + google_token.value).then(tileset=>{
   //   viewer.scene.primitives.add(tileset); 
   // });
   // 自動遮蔽低於地形高度的模型
   cs_viewer.scene.globe.depthTestAgainstTerrain = true;
-  // Cesium3DTileset.fromUrl("/samples/outline/utrecht/tileset.json").then(tileset=>{
-  //   cs_viewer.scene.primitives.add(tileset);
-  //   cs_viewer.zoomTo(tileset);
-  //   // cs_camera.flyTo({
-  //   //   destination: Cartesian3.fromDegrees(121,24,100000),
-  //   // })
-  // });
+  Cesium3DTileset.fromUrl("/samples/lod/tileset.json").then(tileset=>{
+    cs_viewer.scene.primitives.add(tileset);
+    cs_viewer.zoomTo(tileset);
+    // cs_camera.flyTo({
+    //   destination: Cartesian3.fromDegrees(121,24,100000),
+    // })
+  });
 });
 
 function changeLayer(e){
