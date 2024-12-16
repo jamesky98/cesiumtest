@@ -168,13 +168,14 @@ onMounted(function () {
   // });
   // 自動遮蔽低於地形高度的模型
   cs_viewer.scene.globe.depthTestAgainstTerrain = true;
-  Cesium3DTileset.fromUrl("/samples/lod/tileset.json").then(tileset=>{
-    cs_viewer.scene.primitives.add(tileset);
-    cs_viewer.zoomTo(tileset);
-    // cs_camera.flyTo({
-    //   destination: Cartesian3.fromDegrees(121,24,100000),
-    // })
-  });
+  // Cesium3DTileset.fromUrl("/samples/outline/utrecht/tileset.json").then(tileset=>{
+  //   cs_viewer.scene.primitives.add(tileset);
+  //   cs_viewer.zoomTo(tileset);
+  //   // cs_camera.flyTo({
+  //   //   destination: Cartesian3.fromDegrees(121,24,100000),
+  //   // })
+  // });
+
 });
 
 function changeLayer(e){
